@@ -1,0 +1,21 @@
+deployAs:
+  - name: extension
+    applicationType: service
+    endpoint: /
+    scripts:
+      postDeploy: npm install && npm run setup-resources
+    configuration:
+      securedConfiguration:
+        - key: POWERBOARD_INTEGRATION_CONFIG
+          description: Escaped JSON object
+  - name: notification
+    applicationType: service
+    endpoint: /
+    scripts:
+      postDeploy: npm install && npm run setup-resources
+    configuration:
+      securedConfiguration:
+        - key: POWERBOARD_INTEGRATION_CONFIG
+          description: Escaped JSON object
+      
+  

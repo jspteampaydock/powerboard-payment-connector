@@ -1,0 +1,107 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  IMAGE: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_NAME
+#  CI_DEBUG_TRACE: "true"
+
+####################################
+##### TEMPLATES ####################
+####################################
+
+#### API #########################
+.build: &build
+  allow_failure: false
+  services:
+    - name: docker:18.09.8-dind
+  stage: build
+  tags:
+    - powerboard_paydock
+  before_script:
+    - docker system prune -af || true
+    - docker login -u $PERSONAL_ACCESS_TOKEN_NAME -p $PERSONAL_ACCESS_TOKEN_KEY $CI_REGISTRY
+
+
+
+# deploy template:
+.deploy_to: &deploy_to
+  allow_failure: false
+  stage: deploy
+  tags:
+    - powerboard_paydock
+  before_script:
+    - hostname
+    - pwd
+    - docker login -u $PERSONAL_ACCESS_TOKEN_NAME -p $PERSONAL_ACCESS_TOKEN_KEY $CI_REGISTRY
+    - docker swarm init || true
+    - docker network create -d overlay --attachable net_proxy || true
+    - docker network create -d overlay --attachable net_data || true
+
+
+
+###############################
+#### BUILD ####################
+###############################
+
+build_extension:
+  <<: *build
+  script:
+    - docker pull $IMAGE/extension:latest || true
+    - >
+      docker build
+      --build-arg CONNECT_SERVICE_URL
+      --pull
+      --cache-from $IMAGE/extension:latest
+      --tag $IMAGE/extension:${CI_COMMIT_SHA}
+      -f cnf/extension/Dockerfile
+      .
+    - docker tag $IMAGE/extension:${CI_COMMIT_SHA} $IMAGE/extension:latest
+    - docker push $IMAGE/extension:${CI_COMMIT_SHA}
+    - docker push $IMAGE/extension:latest
+  only:
+    - main
+
+build_notification:
+  <<: *build
+  script:
+    - docker pull $IMAGE/notification:latest || true
+    - >
+      docker build
+      --build-arg CONNECT_SERVICE_URL_NOTIFICATION
+      --pull
+      --cache-from $IMAGE/notification:latest
+      --tag $IMAGE/notification:${CI_COMMIT_SHA}
+      -f cnf/notification/Dockerfile
+      .
+    - docker tag $IMAGE/notification:${CI_COMMIT_SHA} $IMAGE/notification:latest
+    - docker push $IMAGE/notification:${CI_COMMIT_SHA}
+    - docker push $IMAGE/notification:latest
+  only:
+    - main
+
+
+
+
+################################
+#### DEPLOY ####################
+################################
+
+deploy_extension:
+#  when: manual
+  <<: *deploy_to
+  script:
+    - docker pull $IMAGE/extension:${CI_COMMIT_SHA}
+    - docker stack deploy -c $(pwd)/cnf/extension/docker-compose.yml jsp --with-registry-auth
+  only:
+    - main
+
+deploy_notification:
+#  when: manual
+  <<: *deploy_to
+  script:
+    - docker pull $IMAGE/notification:${CI_COMMIT_SHA}
+    - docker stack deploy -c $(pwd)/cnf/notification/docker-compose.yml jsp --with-registry-auth
+  only:
+    - main
+

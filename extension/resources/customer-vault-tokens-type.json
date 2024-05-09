@@ -1,0 +1,22 @@
+{
+  "key": "powerboard-components-customer-vault-type",
+  "name": {
+    "en": "Powerboard Vault Tokens for Customer"
+  },
+  "resourceTypeIds": [
+    "customer"
+  ],
+  "fieldDefinitions": [
+    {
+      "name": "userVaultTokens",
+      "label": {
+        "en": "User Vault Tokens"
+      },
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "MultiLine",
+      "required": false
+    }
+  ]
+}

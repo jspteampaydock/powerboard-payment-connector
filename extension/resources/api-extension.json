@@ -1,0 +1,15 @@
+{
+  "key": "powerboard-pay-integration-payment-extension",
+  "destination": {
+    "type": "HTTP",
+    "url": "${ctpPowerboardIntegrationBaseUrl}"
+  },
+  "triggers": [
+    {
+      "resourceTypeId": "payment",
+      "actions": ["Create", "Update"],
+      "condition": "paymentMethodInfo is defined AND paymentMethodInfo(paymentInterface is defined) AND paymentMethodInfo(method=\"powerboard-pay\")"
+    }
+  ],
+  "timeoutInMs": 10000
+}

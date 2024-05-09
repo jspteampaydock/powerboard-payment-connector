@@ -1,0 +1,246 @@
+{
+  "key": "powerboard-components-payment-type",
+  "name": {
+    "en": "Commercetools Powerboard integration"
+  },
+  "resourceTypeIds": ["payment"],
+  "fieldDefinitions": [
+    {
+      "name": "commercetoolsProjectKey",
+      "label": {
+        "en": "Commercetools project key"
+      },
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "SingleLine",
+      "required": false
+    },
+    {
+      "name": "PowerboardPaymentStatus",
+      "label": {
+        "en": "Powerboard payment status"
+      },
+      "required": false,
+      "type": {
+        "name": "Enum",
+        "values": [
+          {
+            "key": "powerboard-pending",
+            "label": "Pending via Powerboard"
+          },
+          {
+            "key": "powerboard-paid",
+            "label": "Paid via Powerboard"
+          },
+          {
+            "key": "powerboard-authorize",
+            "label": "Authorized via Powerboard"
+          },
+          {
+            "key": "powerboard-cancelled",
+            "label": "Cancelled authorize via Powerboard"
+          },
+          {
+            "key": "powerboard-refunded",
+            "label": "Refunded via Powerboard"
+          },
+          {
+            "key": "powerboard-p-refund",
+            "label": "Partial refunded via Powerboard"
+          },
+          {
+            "key": "powerboard-requested",
+            "label": "Requested via Powerboard"
+          },
+          {
+            "key": "powerboard-failed",
+            "label": "Fail via Powerboard"
+          },
+          {
+            "key": "powerboard-received",
+            "label": "Received via Powerboard"
+          }
+        ]
+      },
+      "inputHint": "SingleLine"
+    },
+    {
+      "name": "PowerboardTransactionId",
+      "label": {
+        "en": "Powerboard transaction ID"
+      },
+      "required": false,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "SingleLine"
+    },
+    {
+      "name": "PowerboardPaymentType",
+      "label": {
+        "en": "Payment type"
+      },
+      "required": false,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "SingleLine"
+    },
+    {
+      "name": "CommerceToolsUserId",
+      "label": {
+        "en": "Commerce tools user id"
+      },
+      "required": false,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "SingleLine"
+    },
+    {
+      "name": "SaveCard",
+      "label": {
+        "en": "Save Card"
+      },
+      "required": false,
+      "type": {
+        "name": "Boolean"
+      },
+      "inputHint": "SingleLine"
+    },
+    {
+      "name": "VaultToken",
+      "label": {
+        "en": "Vault token"
+      },
+      "required": false,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "SingleLine"
+    },
+    {
+      "name": "AdditionalInformation",
+      "label": {
+        "en": "Additional information"
+      },
+      "required": false,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "MultiLine"
+    },
+    {
+      "name": "getPaymentMethodsRequest",
+      "label": {
+        "en": "Payment Methods Request"
+      },
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "MultiLine",
+      "required": false
+    },
+    {
+      "name": "getVaultTokenRequest",
+      "label": {
+        "en": "Vault token request"
+      },
+      "required": false,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "MultiLine"
+    },
+    {
+      "name": "getStandalone3dsTokenRequest",
+      "label": {
+        "en": "Standalone 3ds token request"
+      },
+      "required": false,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "MultiLine"
+    },
+    {
+      "name": "getStandalone3dsTokenResponse",
+      "label": {
+        "en": "Standalone 3ds Token Response"
+      },
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "MultiLine",
+      "required": false
+    },
+    {
+      "name": "getVaultTokenResponse",
+      "label": {
+        "en": "Vault token response"
+      },
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "MultiLine",
+      "required": false
+    },
+    {
+      "name": "makePaymentRequest",
+      "label": {
+        "en": "Payment request"
+      },
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "MultiLine",
+      "required": false
+    },
+    {
+      "name": "makePaymentResponse",
+      "label": {
+        "en": "Payment response"
+      },
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "MultiLine",
+      "required": false
+    },
+    {
+      "name": "RefundedAmount",
+      "label": {
+        "en": "Refunded amount"
+      },
+      "type": {
+        "name": "Number"
+      },
+      "required": false,
+      "inputHint": "SingleLine"
+    },
+    {
+      "name": "PaymentExtensionRequest",
+      "label": {
+        "en": "Payment extension request"
+      },
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "MultiLine",
+      "required": false
+    },
+    {
+      "name": "PaymentExtensionResponse",
+      "label": {
+        "en": "Payment extension response"
+      },
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "MultiLine",
+      "required": false
+    }
+
+  ]
+}
