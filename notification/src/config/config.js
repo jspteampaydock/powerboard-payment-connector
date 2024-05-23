@@ -63,20 +63,22 @@ async function getPowerboardConfig(type = 'all') {
     }
   }
   switch (type) {
-    case 'connection':
+    case 'connection': {
       // eslint-disable-next-line no-case-declarations
-      const isSandboxConnection = powerboardConfig['sandbox']?.sandbox_mode ?? false
+      const isSandboxConnection = powerboardConfig['sandbox']?.sandbox_mode ?? false;
       if (isSandboxConnection === 'Yes') {
-        powerboardConfig['sandbox'].api_url = 'https://api.preproduction.powerboard.commbank.com.au'
-        return powerboardConfig['sandbox'] ?? {}
+        powerboardConfig['sandbox'].api_url = 'https://api.preproduction.powerboard.commbank.com.au';
+        return powerboardConfig['sandbox'] ?? {};
       }
-      powerboardConfig['live'].api_url = 'https://api.production.powerboard.commbank.com.au'
-      return powerboardConfig['live'] ?? {}
-
-    case 'widget:':
-      return powerboardConfig['live'] ?? {}
-    default:
-      return powerboardConfig
+      powerboardConfig['live'].api_url = 'https://api.production.powerboard.commbank.com.au';
+      return powerboardConfig['live'] ?? {};
+    }
+    case 'widget': {
+      return powerboardConfig['live'] ?? {};
+    }
+    default: {
+      return powerboardConfig;
+    }
   }
 
 }

@@ -1,4 +1,3 @@
-// import rc from 'rc'
 import {config} from "dotenv";
 
 function loadConfig() {
@@ -7,7 +6,6 @@ function loadConfig() {
     return loadFromPowerboardIntegrationEnvVar()
   }
   return {}
-  // return loadFromExternalFile()
 }
 
 function loadFromPowerboardIntegrationEnvVar() {
@@ -19,15 +17,5 @@ function loadFromPowerboardIntegrationEnvVar() {
     )
   }
 }
-
-/* function loadFromExternalFile() {
-  const appName = 'extension'
-  const configFromExternalFile = rc(appName)
-  const hasConfig = configFromExternalFile?.configs?.length > 0
-  if (!hasConfig) {
-    throw new Error('Powerboard integration configuration is not provided.')
-  }
-  return configFromExternalFile
-} */
 
 export { loadConfig }

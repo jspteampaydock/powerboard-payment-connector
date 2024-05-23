@@ -22,7 +22,7 @@ function deleteCustomFieldAction(name) {
 
 
 function getPowerboardStatus(paymentMethod, responseBodyJson) {
-    let powerboardStatus =  c.STATUS_TYPES.PENDING;
+    let powerboardStatus;
     switch (paymentMethod) {
         case 'bank_account':
             powerboardStatus = responseBodyJson.status === 'requested' ? c.STATUS_TYPES.REQUESTED : c.STATUS_TYPES.FAILED;
@@ -37,7 +37,7 @@ function getPowerboardStatus(paymentMethod, responseBodyJson) {
         default:
             powerboardStatus = c.STATUS_TYPES.PENDING;
     }
-    return powerboardStatus
+    return powerboardStatus;
 }
 
 
