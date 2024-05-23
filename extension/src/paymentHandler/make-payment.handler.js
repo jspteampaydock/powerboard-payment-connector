@@ -15,21 +15,26 @@ async function execute(paymentObject) {
         const fraction = 10 ** paymentObject.amountPlanned.fractionDigits;
         makePaymentRequestObj.amount.value = paymentObject.amountPlanned.centAmount / fraction;
     }
+    let paymentActions = [];
+    const actions = []
+    const customFieldsToDelete = [
+        'makePaymentRequest',
+        'makePaymentResponse',
+        'getVaultTokenRequest',
+        'getVaultTokenResponse',
+        'PaymentExtensionRequest'
+    ];
 
-    const response = await makePayment(makePaymentRequestObj)
+    const [response] = await Promise.all([makePayment(makePaymentRequestObj)])
     if (response.status === 'Failure') {
+        const errorMessage = response.message ?? "Invalid transaction details"
+        actions.push(createSetCustomFieldAction(c.CTP_INTERACTION_PAYMENT_EXTENSION_RESPONSE,  JSON.stringify( {status : "Failure", message : errorMessage})));
+        paymentActions = await  deleteCustomFields(actions, paymentObject, customFieldsToDelete);
         return {
-            "actions": [
-                {
-                    "action": "changeTransactionState",
-                    "transactionId": makePaymentRequestObj.transactionId,
-                    "state": "Failure"
-                }
-            ]
+            actions: paymentActions
         };
     }
 
-    const actions = []
     const requestBodyJson = JSON.parse(paymentObject?.custom?.fields?.makePaymentRequest);
 
     const paymentMethod = requestBodyJson?.PowerboardPaymentType;
@@ -72,16 +77,16 @@ async function execute(paymentObject) {
         actions.push(addTransactionAction)
     }
 
+    customFieldsToDelete.push(c.CTP_INTERACTION_PAYMENT_EXTENSION_RESPONSE)
+    paymentActions = await  deleteCustomFields(actions, paymentObject, customFieldsToDelete)
+    return {
+        actions: paymentActions
+    }
+}
+
+async function deleteCustomFields(actions, paymentObject, customFieldsToDelete) {
     const customFields = paymentObject?.custom?.fields;
     if (customFields) {
-        const customFieldsToDelete = [
-            'makePaymentRequest',
-            'getVaultTokenRequest',
-            'getVaultTokenResponse',
-            'PaymentExtensionRequest',
-            'PaymentExtensionResponse'
-        ];
-
         customFieldsToDelete.forEach(field => {
             if (typeof customFields[field] !== 'undefined' && customFields[field]) {
                 actions.push(deleteCustomFieldAction(field));
@@ -89,9 +94,8 @@ async function execute(paymentObject) {
         });
     }
 
-    return {
-        actions
-    }
+    return actions
 }
+
 
 export default {execute}

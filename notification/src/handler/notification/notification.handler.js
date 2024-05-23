@@ -106,7 +106,8 @@ async function processWebhook(event, payment, notification, ctpClient) {
 
 async function processFraudNotification(event, payment, notification, ctpClient) {
     const result = {}
-    let chargeId = notification.id
+    let chargeId = notification._id
+    const fraudChargeId = notification._id ?? null;
     const currentPayment = payment
     const currentVersion = payment.version
 
@@ -152,8 +153,6 @@ async function processFraudNotification(event, payment, notification, ctpClient)
 
             const isDirectCharge = cacheData.capture
 
-            const fraudChargeId = notification.id
-
             const request = {
                 amount: notification.amount,
                 reference: notification.reference,
@@ -185,6 +184,7 @@ async function processFraudNotification(event, payment, notification, ctpClient)
             const response = await createCharge(request, {directCharge: isDirectCharge}, true)
 
             chargeId = response?.resource?.data?._id ?? 0
+            chargeId = chargeId === 0 ? response?.resource?.data?.id : chargeId
 
 
             if (response?.error) {
@@ -350,7 +350,7 @@ async function processRefundSuccessNotification(event, payment, notification, ct
     if (!notification.transaction || (notification.from_webhook !== undefined && notification.from_webhook)) {
         result.status = 'Failure'
     } else {
-        let chargeId = notification.id
+        let chargeId = notification._id
         const currentPayment = payment
         const currentVersion = payment.version
 
@@ -508,6 +508,7 @@ async function getNewStatuses(notification) {
             commerceToolsPaymentStatus = 'Pending'
             break
         case 'FAILED':
+        case 'DECLINED':
             powerboardPaymentStatus = 'powerboard-failed'
             commerceToolsPaymentStatus = 'Failed'
             break

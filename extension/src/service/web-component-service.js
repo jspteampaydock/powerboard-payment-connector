@@ -89,7 +89,7 @@ async function makePayment(makePaymentRequestObj) {
     }
 
     if (['PayPal Smart', 'Google Pay', 'Apple Pay', 'Afterpay v2'].includes(paymentType)) {
-        powerboardStatus = input.PowerboardPaymentStatus === 'powerboard-authorize' ? c.STATUS_TYPES.AUTHORIZE : c.STATUS_TYPES.PAID;
+        powerboardStatus = input.PowerboardPaymentStatus;
         response = {
             status: 'Success',
             message: 'Create Charge',
@@ -363,16 +363,7 @@ async function cardFraud3DsInBuildCharge({configurations, input, amount, currenc
 
     const result = await createCharge(request, {directCharge: isDirectCharge});
 
-    if (result.status === 'Success') {
-        if (isDirectCharge) {
-            result.powerboardStatus = 'powerboard-paid';
-        } else {
-            result.powerboardStatus = 'powerboard-authorize';
-        }
-    } else {
-        result.powerboardStatus = 'powerboard-failed';
-    }
-
+    result.powerboardStatus = await getPowerboardStatusByAPIResponse(configurations, result.status);
     return result;
 }
 
@@ -543,15 +534,8 @@ async function cardFraudInBuild3DsStandaloneCharge({configurations, input, amoun
 
     const result = await createCharge(request, {directCharge: isDirectCharge});
 
-    if (result.status === 'Success') {
-        if (isDirectCharge) {
-            result.powerboardStatus = 'powerboard-paid';
-        } else {
-            result.powerboardStatus = 'powerboard-authorize';
-        }
-    } else {
-        result.powerboardStatus = 'powerboard-failed';
-    }
+    result.powerboardStatus = await getPowerboardStatusByAPIResponse(configurations, result.status);
+
 
     return result;
 }
@@ -575,6 +559,8 @@ async function card3DsCharge({configurations, input, amount, currency, vaultToke
             type: 'card'
         })
     }
+
+    result.powerboardStatus = await getPowerboardStatusByAPIResponse(configurations, result.status);
 
     return result;
 }
@@ -750,15 +736,8 @@ async function cardFraudInBuildCharge({configurations, input, amount, currency, 
         result.powerboardStatus = c.STATUS_TYPES.FAILED;
     }
 
-    if (result.status === 'Success') {
-        if (isDirectCharge) {
-            result.powerboardStatus = 'powerboard-paid';
-        } else {
-            result.powerboardStatus = 'powerboard-authorize';
-        }
-    } else {
-        result.powerboardStatus = 'powerboard-failed';
-    }
+    result.powerboardStatus = await getPowerboardStatusByAPIResponse(configurations, result.status);
+
 
     return result;
 }
@@ -875,15 +854,8 @@ async function cardCustomerCharge({
         authorization: !isDirectCharge
     }
     const result = await createCharge(request, {directCharge: isDirectCharge});
-    if (result.status === 'Success') {
-        if (isDirectCharge) {
-            result.powerboardStatus = 'powerboard-paid';
-        } else {
-            result.powerboardStatus = 'powerboard-authorize';
-        }
-    } else {
-        result.powerboardStatus = 'powerboard-failed';
-    }
+    result.powerboardStatus = await getPowerboardStatusByAPIResponse(configurations, result.status);
+
 
     return result;
 }
@@ -919,15 +891,8 @@ async function cardCharge({configurations, input, amount, currency, vaultToken})
 
     const result = await createCharge(request, {directCharge: isDirectCharge});
 
-    if (result.status === 'Success') {
-        if (configurations.card_direct_charge !== 'Enable') {
-            result.powerboardStatus = 'powerboard-authorize';
-        } else {
-            result.powerboardStatus = 'powerboard-paid';
-        }
-    } else {
-        result.powerboardStatus = 'powerboard-failed';
-    }
+    result.powerboardStatus = await getPowerboardStatusByAPIResponse(configurations, result.status);
+
 
     return result;
 }
@@ -968,11 +933,11 @@ async function bankAccountFlow({configurations, input, amount, currency, vaultTo
     return result;
 }
 
-async function apmFlow({configurations, input, amount, currency, paymentSource, typePayment}) {
+async function apmFlow({configurations, input, amount, currency, paymentSource, paymentType}) {
     let isDirectCharge;
     let fraudServiceId = null;
     let fraud = false;
-    if (typePayment === 'Zippay') {
+    if (paymentType === 'Zippay') {
         isDirectCharge = configurations.alternative_payment_methods_zippay_direct_charge === 'Enable';
         fraudServiceId = configurations.alternative_payment_methods_zippay_fraud_service_id;
         fraud = configurations.alternative_payment_methods_zippay_fraud === "Enable";
@@ -987,6 +952,7 @@ async function apmFlow({configurations, input, amount, currency, paymentSource, 
         reference: input.orderId ?? '',
         currency,
         token: paymentSource,
+        items: input.items ?? [],
         customer: {
             first_name: input.billing_first_name ?? '',
             last_name: input.billing_last_name ?? '',
@@ -998,22 +964,19 @@ async function apmFlow({configurations, input, amount, currency, paymentSource, 
     }
 
     if (fraud && fraudServiceId) {
+        const fraudData = getAdditionalFields(input);
+        fraudData.first_name = input.billing_first_name ?? '';
+        fraudData.last_name = input.billing_last_name ?? '';
+        fraudData.email = input.billing_email ?? '';
+        fraudData.phone = input.billing_phone ?? '';
         request.fraud = {
             service_id: fraudServiceId,
-            data: {}
+            data: fraudData
         }
     }
 
     const result = await createCharge(request, {directCharge: isDirectCharge});
-    if (result.status === 'Success') {
-        if (!isDirectCharge) {
-            result.powerboardStatus = 'powerboard-authorize';
-        } else {
-            result.powerboardStatus = 'powerboard-paid';
-        }
-    } else {
-        result.powerboardStatus = 'powerboard-failed';
-    }
+    result.powerboardStatus = await getPowerboardStatusByAPIResponse(configurations, result.status);
     return result;
 }
 
@@ -1308,18 +1271,28 @@ async function bankAccountDirectCharge({configurations, input, customerId, vault
 
 async function createCharge(data, params = {}, returnObject = false) {
     try {
+        let isFraud = false;
         let url = '/v1/charges';
         if (params.action !== undefined) {
             if (params.action === 'standalone-fraud') {
                 url += '/fraud';
+                isFraud = true;
             }
             if (params.action === 'standalone-fraud-attach') {
                 url += `/${params.chargeId}/fraud/attach`;
+                isFraud = true;
             }
         }
 
         if (params.directCharge !== undefined && params.directCharge === false) {
             url += '?capture=false';
+        }
+        if (isFraud) {
+            const addressLine2 = data.customer.payment_source.address_line2 ?? '';
+            if(addressLine2 === ''){
+                delete(data.customer.payment_source.address_line2);
+                delete(data.fraud.data.address_line2);
+            }
         }
 
         const {response} = await callPowerboard(url, data, 'POST');
@@ -1351,14 +1324,20 @@ async function createCharge(data, params = {}, returnObject = false) {
 }
 
 function getAdditionalFields(input) {
-    return {
+
+    const additionalFields = {
         address_country: input.address_country ?? '',
         address_postcode: input.address_postcode ?? '',
         address_city: input.address_city ?? '',
-        address_state: input.address_state ?? '',
         address_line1: input.address_line ?? '',
         address_line2: input.address_line2 ?? (input.address_line ?? ''),
     }
+
+    const addressState = input.address_state ?? '';
+    if (addressState) {
+        additionalFields.addressState = addressState;
+    }
+    return additionalFields
 }
 
 async function callPowerboard(url, data, method) {
@@ -1436,6 +1415,22 @@ async function buildRequestPowerboard(requestObj, methodOverride) {
     }
     return request
 }
+
+async function getPowerboardStatusByAPIResponse(configurations, paymentStatus) {
+    let powerboardStatus = 'powerboard-failed'
+    const isDirectCharge = configurations.card_direct_charge === 'Enable';
+    if (paymentStatus === 'Success') {
+        if (isDirectCharge) {
+            powerboardStatus = 'powerboard-paid';
+        } else {
+            powerboardStatus = 'powerboard-authorize';
+        }
+    } else {
+        powerboardStatus = 'powerboard-failed';
+    }
+    return powerboardStatus;
+}
+
 
 async function updateOrderPaymentState(orderId, status) {
     const ctpConfig = config.getExtensionConfig()

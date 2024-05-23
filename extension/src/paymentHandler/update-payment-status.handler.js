@@ -14,7 +14,7 @@ async function execute(paymentObject) {
     const newStatus = requestBodyJson.newStatus;
     const oldStatus = paymentObject.custom.fields.PowerboardPaymentStatus;
     let chargeId = paymentObject.custom.fields?.PowerboardTransactionId;
-    let error = null;
+    let errorMessage = null;
     let responseAPI;
     let refundedAmount = 0;
     try {
@@ -22,11 +22,15 @@ async function execute(paymentObject) {
             case c.STATUS_TYPES.PAID:
                 if (oldStatus === c.STATUS_TYPES.AUTHORIZE) {
                     responseAPI = await updatePowerboardStatus(`/v1/charges/${chargeId}/capture`, 'post', {});
+                }else{
+                    errorMessage =  "Charge not found or not in the desired state";
                 }
                 break;
             case c.STATUS_TYPES.CANCELLED:
                 if (oldStatus === c.STATUS_TYPES.AUTHORIZE || oldStatus === c.STATUS_TYPES.PAID) {
-                    responseAPI = await updatePowerboardStatus(`/v1/charges/${chargeId}/capture`, 'post', {});
+                    responseAPI = await updatePowerboardStatus(`/v1/charges/${chargeId}/capture`, 'delete', {});
+                }else{
+                    errorMessage =  "Charge not found or not in the desired state";
                 }
                 break;
             case c.STATUS_TYPES.REFUNDED:
@@ -38,6 +42,8 @@ async function execute(paymentObject) {
                         amount: requestBodyJson.refundAmount,
                         from_webhook: true
                     });
+                }else{
+                    errorMessage =  "Charge not found or not in the desired state";
                 }
                 break;
             default:
@@ -46,6 +52,13 @@ async function execute(paymentObject) {
     } catch (err) {
         console.error('Error handling status change:', err);
         return {actions: [], error: err.message};
+    }
+
+     if(errorMessage){
+        actions.push(createSetCustomFieldAction(c.CTP_INTERACTION_PAYMENT_EXTENSION_RESPONSE, {status: false, message: errorMessage}));
+        return {
+            actions,
+        }
     }
 
     let message = `Change status from '${oldStatus}' to '${newStatus}'`;
@@ -60,15 +73,14 @@ async function execute(paymentObject) {
                 actions.push(createSetCustomFieldAction(c.CTP_CUSTOM_FIELD_REFUNDED_AMOUNT, refundedAmount))
             }
         } else {
-            error = `Incorrect operation: ${message}`;
-            message = error;
+            errorMessage = responseAPI.message ?? `Incorrect operation: ${message}`;
         }
     } else {
         actions.push(createSetCustomFieldAction(c.CTP_CUSTOM_FIELD_POAWRBOARD_PAYMENT_STATUS, newStatus))
     }
 
 
-    const response = error ? {status: false, message: error} : {status: true};
+    const response = errorMessage ? {status: false, message: errorMessage} : {status: true};
     const responseStatus = response.status ? "Success" : "Failed"
     if (response.status && refundedAmount) {
         response.message = "Merchant refunded money"
