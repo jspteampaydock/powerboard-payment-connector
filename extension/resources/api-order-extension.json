@@ -1,0 +1,14 @@
+{
+  "key": "paydock-order-extension",
+  "destination": {
+    "type": "HTTP",
+    "url": "${ctpPaydockIntegrationBaseUrl}/create-order"
+  },
+  "triggers": [
+    {
+      "resourceTypeId": "order",
+      "actions": ["Create"]
+    }
+  ],
+  "timeoutInMs": 2000
+}

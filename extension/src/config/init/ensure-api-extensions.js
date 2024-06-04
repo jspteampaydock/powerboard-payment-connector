@@ -7,12 +7,16 @@ const mainLogger = utils.getLogger()
 async function ensureApiExtensions(
   ctpClient,
   ctpProjectKey,
-  ctpPowerboardIntegrationBaseUrl
+  ctpPaydockIntegrationBaseUrl
 ) {
 
 
   const apiExtensionTemplate = await utils.readAndParseJsonFile(
     'resources/api-extension.json',
+  )
+
+  const apiExtensionOrderTemplate = await utils.readAndParseJsonFile(
+      'resources/api-order-extension.json',
   )
   try {
     const logger = mainLogger.child({
@@ -20,14 +24,33 @@ async function ensureApiExtensions(
     })
     const extensionDraft = JSON.parse(
       _.template(JSON.stringify(apiExtensionTemplate))({
-        ctpPowerboardIntegrationBaseUrl,
+        ctpPaydockIntegrationBaseUrl,
       }),
     )
 
+    const extensionOrderDraft = JSON.parse(
+        _.template(JSON.stringify(apiExtensionOrderTemplate))({
+          ctpPaydockIntegrationBaseUrl,
+        }),
+    )
     const existingExtension = await fetchExtensionByKey(
       ctpClient,
       apiExtensionTemplate.key,
     )
+
+    const existingExtensionOrder = await fetchExtensionByKey(
+        ctpClient,
+        apiExtensionOrderTemplate.key,
+    )
+    const existingExtensionOrderPB = await fetchExtensionByKey(
+        ctpClient,
+        'powerboard-order-extension'
+    )
+
+    if (existingExtensionOrder === null && existingExtensionOrderPB === null) {
+      await ctpClient.create(ctpClient.builder.extensions, extensionOrderDraft)
+    }
+
     if (existingExtension === null) {
       await ctpClient.create(ctpClient.builder.extensions, extensionDraft)
       logger.info(

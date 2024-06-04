@@ -1,7 +1,7 @@
 {
-  "key": "powerboard-components-payment-type",
+  "key": "paydock-components-payment-type",
   "name": {
-    "en": "Commercetools Powerboard integration"
+    "en": "Commercetools paydock integration"
   },
   "resourceTypeIds": ["payment"],
   "fieldDefinitions": [
@@ -17,58 +17,58 @@
       "required": false
     },
     {
-      "name": "PowerboardPaymentStatus",
+      "name": "PaydockPaymentStatus",
       "label": {
-        "en": "Powerboard payment status"
+        "en": "Paydock payment status"
       },
       "required": false,
       "type": {
         "name": "Enum",
         "values": [
           {
-            "key": "powerboard-pending",
-            "label": "Pending via Powerboard"
+            "key": "paydock-pending",
+            "label": "Pending via Paydock"
           },
           {
-            "key": "powerboard-paid",
-            "label": "Paid via Powerboard"
+            "key": "paydock-paid",
+            "label": "Paid via Paydock"
           },
           {
-            "key": "powerboard-authorize",
-            "label": "Authorized via Powerboard"
+            "key": "paydock-authorize",
+            "label": "Authorized via Paydock"
           },
           {
-            "key": "powerboard-cancelled",
-            "label": "Cancelled authorize via Powerboard"
+            "key": "paydock-cancelled",
+            "label": "Cancelled authorize via Paydock"
           },
           {
-            "key": "powerboard-refunded",
-            "label": "Refunded via Powerboard"
+            "key": "paydock-refunded",
+            "label": "Refunded via Paydock"
           },
           {
-            "key": "powerboard-p-refund",
-            "label": "Partial refunded via Powerboard"
+            "key": "paydock-p-refund",
+            "label": "Partial refunded via Paydock"
           },
           {
-            "key": "powerboard-requested",
-            "label": "Requested via Powerboard"
+            "key": "paydock-requested",
+            "label": "Requested via Paydock"
           },
           {
-            "key": "powerboard-failed",
-            "label": "Fail via Powerboard"
+            "key": "paydock-failed",
+            "label": "Fail via Paydock"
           },
           {
-            "key": "powerboard-received",
-            "label": "Received via Powerboard"
+            "key": "paydock-received",
+            "label": "Received via Paydock"
           }
         ]
       },
       "inputHint": "SingleLine"
     },
     {
-      "name": "PowerboardTransactionId",
+      "name": "PaydockTransactionId",
       "label": {
-        "en": "Powerboard transaction ID"
+        "en": "Paydock transaction ID"
       },
       "required": false,
       "type": {
@@ -77,7 +77,7 @@
       "inputHint": "SingleLine"
     },
     {
-      "name": "PowerboardPaymentType",
+      "name": "PaydockPaymentType",
       "label": {
         "en": "Payment type"
       },

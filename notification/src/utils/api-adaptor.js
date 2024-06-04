@@ -1,15 +1,26 @@
 import config from '../config/config.js'
 
 
-async function callPowerboard(url, data, httpMethod) {
-  const apiUrl = await config.getPowerboardApiUrl() + url
-  const powerboardCredentials = await config.getPowerboardConfig('connection')
+async function callPaydock(url, data, httpMethod) {
+  const apiUrl = await config.getPaydockApiUrl() + url
+  const paydockCredentials = await config.getPaydockConfig('connection')
+  let requestHeaders = {}
+  if (paydockCredentials.credentials_type === 'credentials') {
+    requestHeaders = {
+      'X-Commercetools-Meta': 'V1.0.0_commercetools',
+      'Content-Type': 'application/json',
+      'x-user-secret-key': paydockCredentials.credentials_secret_key
+    }
+  } else {
+    requestHeaders = {
+      'X-Commercetools-Meta': 'V1.0.0_commercetools',
+      'Content-Type': 'application/json',
+      'x-access-token': paydockCredentials.credentials_access_key
+    }
+  }
   const requestOptions = {
     method: httpMethod,
-    headers: {
-      'Content-Type': 'application/json',
-      'x-user-secret-key': powerboardCredentials.credentials_secret_key
-    }
+    headers: requestHeaders
   };
   if (httpMethod !== 'GET' && data) {
      requestOptions.body = JSON.stringify(data); // Ensure the body is stringified for POST requests
@@ -30,5 +41,5 @@ async function callPowerboard(url, data, httpMethod) {
 }
 
 export default {
-  callPowerboard
+  callPaydock
 }

@@ -1,0 +1,23 @@
+version: "3.6"
+
+services:
+
+  paydock-extension:
+    build:
+      context: .
+      dockerfile: extension/Dockerfile
+    restart: always
+    ports:
+      - 8082:8082
+    environment:
+      - "PAYDOCK_INTEGRATION_CONFIG=xxxxxx"
+
+  paydock-notification:
+    build:
+      context: .
+      dockerfile: notification/Dockerfile
+    restart: always
+    ports:
+      - 8443:8443
+    environment:
+      - "PAYDOCK_INTEGRATION_CONFIG=xxxxxx"

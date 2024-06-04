@@ -14,12 +14,12 @@ async function execute(paymentObject) {
     if(paymentExtensionRequest.request){
         CommerceToolsUserId = paymentExtensionRequest.request.CommerceToolsUserId
     }
-    const powerboardCredentials = await config.getPowerboardConfig('all', true);
+    const paydockCredentials = await config.getPaydockConfig('all', true);
     let connection = {};
-    if (powerboardCredentials.sandbox.sandbox_mode === "Yes") {
-        connection = powerboardCredentials.sandbox;
+    if (paydockCredentials.sandbox.sandbox_mode === "Yes") {
+        connection = paydockCredentials.sandbox;
     } else {
-        connection = powerboardCredentials.live;
+        connection = paydockCredentials.live;
     }
 
 
@@ -37,7 +37,7 @@ async function execute(paymentObject) {
     }
 
     const responseData = {
-        sandbox_mode: powerboardCredentials.sandbox.sandbox_mode,
+        sandbox_mode: paydockCredentials.sandbox.sandbox_mode,
         api_credentials: {
             credentials_type: connection.credentials_type,
             credentials_public_key: connection.credentials_public_key,
@@ -45,10 +45,10 @@ async function execute(paymentObject) {
         },
         payment_methods: {
             "card": {
-                name: "powerboard-pay-card",
+                name: "paydock-pay-card",
                 type: "card",
-                title: powerboardCredentials.widget.payment_methods_cards_title,
-                description: powerboardCredentials.widget.payment_methods_cards_description,
+                title: paydockCredentials.widget.payment_methods_cards_title,
+                description: paydockCredentials.widget.payment_methods_cards_description,
                 config: {
                     card_use_on_checkout: connection.card_use_on_checkout,
                     card_gateway_id: connection.card_gateway_id,
@@ -64,10 +64,10 @@ async function execute(paymentObject) {
                 }
             },
             "bank_accounts": {
-                name: "powerboard-pay-bank-accounts",
+                name: "paydock-pay-bank-accounts",
                 type: "bank_accounts",
-                title: powerboardCredentials.widget.payment_methods_bank_accounts_title,
-                description: powerboardCredentials.widget.payment_methods_bank_accounts_description,
+                title: paydockCredentials.widget.payment_methods_bank_accounts_title,
+                description: paydockCredentials.widget.payment_methods_bank_accounts_description,
                 config: {
                     bank_accounts_use_on_checkout: connection.bank_accounts_use_on_checkout,
                     bank_accounts_gateway_id: connection.bank_accounts_gateway_id,
@@ -76,10 +76,10 @@ async function execute(paymentObject) {
                 }
             },
             "apple-pay": {
-                name: "powerboard-pay-apple-pay",
+                name: "paydock-pay-apple-pay",
                 type: "apple-pay",
-                title: powerboardCredentials.payment_methods_wallets_apple_pay_title,
-                description: powerboardCredentials.payment_methods_wallets_apple_pay_description,
+                title: paydockCredentials.payment_methods_wallets_apple_pay_title,
+                description: paydockCredentials.payment_methods_wallets_apple_pay_description,
                 config: {
                     wallets_apple_pay_use_on_checkout: connection.wallets_apple_pay_use_on_checkout,
                     wallets_apple_pay_gateway_id: connection.wallets_apple_pay_gateway_id,
@@ -89,10 +89,10 @@ async function execute(paymentObject) {
                 }
             },
             "google-pay": {
-                name: "powerboard-pay-google-pay",
+                name: "paydock-pay-google-pay",
                 type: "google-pay",
-                title: powerboardCredentials.payment_methods_wallets_google_pay_title,
-                description: powerboardCredentials.payment_methods_wallets_google_pay_description,
+                title: paydockCredentials.payment_methods_wallets_google_pay_title,
+                description: paydockCredentials.payment_methods_wallets_google_pay_description,
                 config: {
                     wallets_google_pay_use_on_checkout: connection.wallets_google_pay_use_on_checkout,
                     wallets_google_pay_gateway_id: connection.wallets_google_pay_gateway_id,
@@ -102,10 +102,10 @@ async function execute(paymentObject) {
                 }
             },
             "afterpay_v2": {
-                name: "powerboard-pay-afterpay_v2",
+                name: "paydock-pay-afterpay_v2",
                 type: "afterpay_v2",
-                title: powerboardCredentials.payment_methods_wallets_afterpay_v2_title,
-                description: powerboardCredentials.payment_methods_wallets_afterpay_v2_description,
+                title: paydockCredentials.payment_methods_wallets_afterpay_v2_title,
+                description: paydockCredentials.payment_methods_wallets_afterpay_v2_description,
                 config: {
                     wallets_afterpay_v2_use_on_checkout: connection.wallets_afterpay_v2_use_on_checkout,
                     wallets_afterpay_v2_gateway_id: connection.wallets_afterpay_v2_gateway_id,
@@ -115,10 +115,10 @@ async function execute(paymentObject) {
                 }
             },
             "paypal_smart": {
-                name: "powerboard-pay-paypal_smart",
+                name: "paydock-pay-paypal_smart",
                 type: "paypal_smart",
-                title: powerboardCredentials.payment_methods_wallets_paypal_title,
-                description: powerboardCredentials.payment_methods_wallets_paypal_description,
+                title: paydockCredentials.payment_methods_wallets_paypal_title,
+                description: paydockCredentials.payment_methods_wallets_paypal_description,
                 config: {
                     wallets_paypal_smart_button_use_on_checkout: connection.wallets_paypal_smart_button_use_on_checkout,
                     wallets_paypal_smart_button_gateway_id: connection.wallets_paypal_smart_button_gateway_id,
@@ -129,10 +129,10 @@ async function execute(paymentObject) {
                 }
             },
             "afterpay_v1": {
-                name: "powerboard-pay-afterpay_v1",
+                name: "paydock-pay-afterpay_v1",
                 type: "afterpay_v1",
-                title: powerboardCredentials.payment_methods_alternative_payment_method_afterpay_v1_title,
-                description: powerboardCredentials.payment_methods_alternative_payment_method_afterpay_v1_description,
+                title: paydockCredentials.payment_methods_alternative_payment_method_afterpay_v1_title,
+                description: paydockCredentials.payment_methods_alternative_payment_method_afterpay_v1_description,
                 config: {
                     alternative_payment_methods_afterpay_v1_use_on_checkout: connection.alternative_payment_methods_afterpay_v1_use_on_checkout,
                     alternative_payment_methods_afterpay_v1_gateway_id: connection.alternative_payment_methods_afterpay_v1_gateway_id,
@@ -142,10 +142,10 @@ async function execute(paymentObject) {
                 }
             },
             "zippay": {
-                name: "powerboard-pay-zippay",
+                name: "paydock-pay-zippay",
                 type: "zippay",
-                title: powerboardCredentials.payment_methods_alternative_payment_method_zip_title,
-                description: powerboardCredentials.payment_methods_alternative_payment_method_zip_description,
+                title: paydockCredentials.payment_methods_alternative_payment_method_zip_title,
+                description: paydockCredentials.payment_methods_alternative_payment_method_zip_description,
                 config: {
                     alternative_payment_methods_zippay_use_on_checkout: connection.alternative_payment_methods_zippay_use_on_checkout,
                     alternative_payment_methods_zippay_gateway_id: connection.alternative_payment_methods_zippay_gateway_id,
@@ -157,44 +157,44 @@ async function execute(paymentObject) {
         },
         widget_configuration: {
             version: {
-                version_version: powerboardCredentials.widget.version_version,
-                version_custom_version: powerboardCredentials.widget.version_custom_version
+                version_version: paydockCredentials.widget.version_version,
+                version_custom_version: paydockCredentials.widget.version_custom_version
             },
             payment_methods: {
                 cards: {
-                    payment_methods_cards_title: powerboardCredentials.widget.payment_methods_cards_title,
-                    payment_methods_cards_description: powerboardCredentials.widget.payment_methods_cards_description
+                    payment_methods_cards_title: paydockCredentials.widget.payment_methods_cards_title,
+                    payment_methods_cards_description: paydockCredentials.widget.payment_methods_cards_description
                 },
                 bank_accounts: {
-                    payment_methods_bank_accounts_title: powerboardCredentials.widget.payment_methods_bank_accounts_title,
-                    payment_methods_bank_accounts_description:  powerboardCredentials.widget.payment_methods_bank_accounts_description,
+                    payment_methods_bank_accounts_title: paydockCredentials.widget.payment_methods_bank_accounts_title,
+                    payment_methods_bank_accounts_description:  paydockCredentials.widget.payment_methods_bank_accounts_description,
                 },
                 wallets: {
-                    payment_methods_wallets_apple_pay_title: powerboardCredentials.widget.payment_methods_wallets_apple_pay_title,
-                    payment_methods_wallets_apple_pay_description: powerboardCredentials.widget.payment_methods_wallets_apple_pay_description,
-                    payment_methods_wallets_google_pay_title: powerboardCredentials.widget.payment_methods_wallets_google_pay_title,
-                    payment_methods_wallets_google_pay_description: powerboardCredentials.widget.payment_methods_wallets_google_pay_description,
-                    payment_methods_wallets_afterpay_v2_title: powerboardCredentials.widget.payment_methods_wallets_afterpay_v2_title,
-                    payment_methods_wallets_afterpay_v2_description: powerboardCredentials.widget.payment_methods_wallets_afterpay_v2_description,
-                    payment_methods_wallets_paypal_title: powerboardCredentials.widget.payment_methods_wallets_paypal_title,
-                    payment_methods_wallets_paypal_description: powerboardCredentials.widget.payment_methods_wallets_paypal_description
+                    payment_methods_wallets_apple_pay_title: paydockCredentials.widget.payment_methods_wallets_apple_pay_title,
+                    payment_methods_wallets_apple_pay_description: paydockCredentials.widget.payment_methods_wallets_apple_pay_description,
+                    payment_methods_wallets_google_pay_title: paydockCredentials.widget.payment_methods_wallets_google_pay_title,
+                    payment_methods_wallets_google_pay_description: paydockCredentials.widget.payment_methods_wallets_google_pay_description,
+                    payment_methods_wallets_afterpay_v2_title: paydockCredentials.widget.payment_methods_wallets_afterpay_v2_title,
+                    payment_methods_wallets_afterpay_v2_description: paydockCredentials.widget.payment_methods_wallets_afterpay_v2_description,
+                    payment_methods_wallets_paypal_title: paydockCredentials.widget.payment_methods_wallets_paypal_title,
+                    payment_methods_wallets_paypal_description: paydockCredentials.widget.payment_methods_wallets_paypal_description
                 },
                 alternative_payment_methods: {
-                    payment_methods_alternative_payment_method_afterpay_v1_title: powerboardCredentials.widget.payment_methods_alternative_payment_method_afterpay_v1_title,
-                    payment_methods_alternative_payment_method_afterpay_v1_description: powerboardCredentials.widget.payment_methods_alternative_payment_method_afterpay_v1_description,
-                    payment_methods_alternative_payment_method_zip_title: powerboardCredentials.widget.payment_methods_alternative_payment_method_zip_title,
-                    payment_methods_alternative_payment_method_zip_description: powerboardCredentials.widget.payment_methods_alternative_payment_method_zip_description
+                    payment_methods_alternative_payment_method_afterpay_v1_title: paydockCredentials.widget.payment_methods_alternative_payment_method_afterpay_v1_title,
+                    payment_methods_alternative_payment_method_afterpay_v1_description: paydockCredentials.widget.payment_methods_alternative_payment_method_afterpay_v1_description,
+                    payment_methods_alternative_payment_method_zip_title: paydockCredentials.widget.payment_methods_alternative_payment_method_zip_title,
+                    payment_methods_alternative_payment_method_zip_description: paydockCredentials.widget.payment_methods_alternative_payment_method_zip_description
                 }
             },
             widget_style:{
-                widget_style_bg_color: powerboardCredentials.widget.widget_style_bg_color,
-                widget_style_text_color: powerboardCredentials.widget.widget_style_text_color,
-                widget_style_border_color: powerboardCredentials.widget.widget_style_border_color,
-                widget_style_error_color: powerboardCredentials.widget.widget_style_success_color,
-                widget_style_success_color: powerboardCredentials.widget.widget_style_success_color,
-                widget_style_font_size: powerboardCredentials.widget.widget_style_font_size,
-                widget_style_font_family: powerboardCredentials.widget.widget_style_font_family,
-                widget_style_custom_element: powerboardCredentials.widget.widget_style_custom_element
+                widget_style_bg_color: paydockCredentials.widget.widget_style_bg_color,
+                widget_style_text_color: paydockCredentials.widget.widget_style_text_color,
+                widget_style_border_color: paydockCredentials.widget.widget_style_border_color,
+                widget_style_error_color: paydockCredentials.widget.widget_style_success_color,
+                widget_style_success_color: paydockCredentials.widget.widget_style_success_color,
+                widget_style_font_size: paydockCredentials.widget.widget_style_font_size,
+                widget_style_font_family: paydockCredentials.widget.widget_style_font_family,
+                widget_style_custom_element: paydockCredentials.widget.widget_style_custom_element
             }
         },
         saved_credentials: savedCredentials

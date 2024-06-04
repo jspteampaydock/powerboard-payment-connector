@@ -1,7 +1,7 @@
 {
-  "key": "powerboard-components-customer-vault-type",
+  "key": "paydock-components-customer-vault-type",
   "name": {
-    "en": "Powerboard Vault Tokens for Customer"
+    "en": "Paydock Vault Tokens for Customer"
   },
   "resourceTypeIds": [
     "customer"

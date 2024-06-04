@@ -6,7 +6,7 @@ deployAs:
       postDeploy: npm install && npm run setup-resources
     configuration:
       securedConfiguration:
-        - key: POWERBOARD_INTEGRATION_CONFIG
+        - key: PAYDOCK_INTEGRATION_CONFIG
           description: Escaped JSON object
   - name: notification
     applicationType: service
@@ -15,7 +15,7 @@ deployAs:
       postDeploy: npm install && npm run setup-resources
     configuration:
       securedConfiguration:
-        - key: POWERBOARD_INTEGRATION_CONFIG
+        - key: PAYDOCK_INTEGRATION_CONFIG
           description: Escaped JSON object
       
   

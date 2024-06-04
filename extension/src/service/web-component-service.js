@@ -7,12 +7,12 @@ import ctp from "../ctp.js";
 import customObjectsUtils from "../utils/custom-objects-utils.js";
 
 
-/* Powerboard integration */
+/* Paydock integration */
 
 async function makePayment(makePaymentRequestObj) {
     const orderId = makePaymentRequestObj.orderId;
-    const paymentSource = makePaymentRequestObj.PowerboardTransactionId;
-    const paymentType = makePaymentRequestObj.PowerboardPaymentType;
+    const paymentSource = makePaymentRequestObj.PaydockTransactionId;
+    const paymentType = makePaymentRequestObj.PaydockPaymentType;
     const amount = makePaymentRequestObj.amount.value;
     const currency = makePaymentRequestObj.amount.currency ?? 'AUD';
     const input = makePaymentRequestObj;
@@ -23,13 +23,13 @@ async function makePayment(makePaymentRequestObj) {
     }
     let vaultToken = makePaymentRequestObj.VaultToken;
     let status = "Success";
-    let powerboardStatus = "powerboard-pending";
+    let paydockStatus = "paydock-pending";
     let message = "Create Charge";
 
     let response = null;
     let chargeId = 0;
 
-    const configurations = await config.getPowerboardConfig('connection');
+    const configurations = await config.getPaydockConfig('connection');
 
     if (vaultToken === undefined || !vaultToken.length) {
         const data = {
@@ -89,11 +89,11 @@ async function makePayment(makePaymentRequestObj) {
     }
 
     if (['PayPal Smart', 'Google Pay', 'Apple Pay', 'Afterpay v2'].includes(paymentType)) {
-        powerboardStatus = input.PowerboardPaymentStatus;
+        paydockStatus = input.PaydockPaymentStatus;
         response = {
             status: 'Success',
             message: 'Create Charge',
-            powerboardStatus,
+            paydockStatus,
             chargeId: input.charge_id
         }
     }
@@ -101,14 +101,14 @@ async function makePayment(makePaymentRequestObj) {
     if (response) {
         status = response.status;
         message = response.message;
-        powerboardStatus = response.powerboardStatus ?? powerboardStatus;
+        paydockStatus = response.paydockStatus ?? paydockStatus;
         chargeId = response.chargeId
     }
 
-    await updateOrderPaymentState(orderId, powerboardStatus);
-    await httpUtils.addPowerboardLog({
-        powerboardChargeID: chargeId,
-        operation: powerboardStatus,
+    await updateOrderPaymentState(orderId, paydockStatus);
+    await httpUtils.addPaydockLog({
+        paydockChargeID: chargeId,
+        operation: paydockStatus,
         status,
         message
     })
@@ -119,13 +119,13 @@ async function makePayment(makePaymentRequestObj) {
 async function getVaultToken(getVaultTokenRequestObj) {
     const {data, userId, saveCard, type} = getVaultTokenRequestObj;
 
-    const configurations = await config.getPowerboardConfig('connection');
+    const configurations = await config.getPaydockConfig('connection');
 
     return await createVaultToken({data, userId, saveCard, type, configurations});
 }
 
 async function createVaultToken({data, userId, saveCard, type, configurations}) {
-    const {response} = await callPowerboard('/v1/vault/payment_sources/', data, 'POST');
+    const {response} = await callPaydock('/v1/vault/payment_sources/', data, 'POST');
 
     if (response.status === 201) {
         if (shouldSaveVaultToken({type, saveCard, userId, configurations})) {
@@ -144,7 +144,7 @@ async function createVaultToken({data, userId, saveCard, type, configurations}) 
 }
 
 async function createPreCharge(data, capture = true) {
-    const {response} = await callPowerboard(`/v1/charges/wallet?capture=${capture ? 'true' : 'false'}`, data, 'POST');
+    const {response} = await callPaydock(`/v1/charges/wallet?capture=${capture ? 'true' : 'false'}`, data, 'POST');
 
     if (response.status === 201) {
         return {
@@ -160,7 +160,7 @@ async function createPreCharge(data, capture = true) {
 }
 
 async function createStandalone3dsToken(data) {
-    const {response} = await callPowerboard('/v1/charges/standalone-3ds', data, 'POST');
+    const {response} = await callPaydock('/v1/charges/standalone-3ds', data, 'POST');
 
     if (response.status === 201) {
         return {
@@ -291,7 +291,7 @@ async function cardFraud3DsCharge({
             result = {
                 status: 'Failure',
                 message: 'In-built fraud & 3ds error',
-                powerboardStatus: 'powerboard-failed'
+                paydockStatus: 'paydock-failed'
             }
     }
 
@@ -362,8 +362,7 @@ async function cardFraud3DsInBuildCharge({configurations, input, amount, currenc
     }
 
     const result = await createCharge(request, {directCharge: isDirectCharge});
-
-    result.powerboardStatus = await getPowerboardStatusByAPIResponse(configurations, result.status);
+    result.paydockStatus = await getPaydockStatusByAPIResponse(configurations, result.status);
     return result;
 }
 
@@ -424,10 +423,10 @@ async function cardFraud3DsStandaloneCharge({configurations, input, amount, curr
             phone: input.billing_phone ?? ''
         };
 
-        await customObjectsUtils.setItem(`powerboard${input.orderId}`, JSON.stringify(cacheData));
-        result.powerboardStatus = 'powerboard-pending';
+        await customObjectsUtils.setItem(`paydock_fraud_${input.orderId}`, JSON.stringify(cacheData));
+        result.paydockStatus = 'paydock-pending';
     } else {
-        result.powerboardStatus = 'powerboard-failed';
+        result.paydockStatus = 'paydock-failed';
     }
 
     return result;
@@ -486,10 +485,10 @@ async function cardFraudStandalone3DsInBuildCharge({configurations, input, amoun
             phone: input.billing_phone ?? ''
         };
 
-        await customObjectsUtils.setItem(`powerboard${input.orderId}`, JSON.stringify(cacheData));
-        result.powerboardStatus = 'powerboard-pending';
+        await customObjectsUtils.setItem(`paydock_fraud_${input.orderId}`, JSON.stringify(cacheData));
+        result.paydockStatus = 'paydock-pending';
     } else {
-        result.powerboardStatus = 'powerboard-failed';
+        result.paydockStatus = 'paydock-failed';
     }
 
     return result;
@@ -533,10 +532,7 @@ async function cardFraudInBuild3DsStandaloneCharge({configurations, input, amoun
     }
 
     const result = await createCharge(request, {directCharge: isDirectCharge});
-
-    result.powerboardStatus = await getPowerboardStatusByAPIResponse(configurations, result.status);
-
-
+    result.paydockStatus = await getPaydockStatusByAPIResponse(configurations, result.status);
     return result;
 }
 
@@ -559,10 +555,23 @@ async function card3DsCharge({configurations, input, amount, currency, vaultToke
             type: 'card'
         })
     }
-
-    result.powerboardStatus = await getPowerboardStatusByAPIResponse(configurations, result.status);
-
+    result.paydockStatus = await getPaydockStatusByAPIResponse(configurations, result.status);
     return result;
+}
+
+async function getPaydockStatusByAPIResponse(configurations, paymentStatus) {
+    let paydockStatus = 'paydock-failed'
+    const isDirectCharge = configurations.card_direct_charge === 'Enable';
+    if (paymentStatus === 'Success') {
+        if (isDirectCharge) {
+            paydockStatus = 'paydock-paid';
+        } else {
+            paydockStatus = 'paydock-authorize';
+        }
+    } else {
+        paydockStatus = 'paydock-failed';
+    }
+    return paydockStatus;
 }
 
 async function card3DsInBuildCharge({configurations, input, amount, currency, vaultToken}) {
@@ -731,13 +740,10 @@ async function cardFraudInBuildCharge({configurations, input, amount, currency, 
 
     const result = await createCharge(request, {directCharge: isDirectCharge});
     if (result.status === 'Success') {
-        result.powerboardStatus = c.STATUS_TYPES.PENDING;
+        result.paydockStatus = c.STATUS_TYPES.PENDING;
     } else {
-        result.powerboardStatus = c.STATUS_TYPES.FAILED;
+        result.paydockStatus = c.STATUS_TYPES.FAILED;
     }
-
-    result.powerboardStatus = await getPowerboardStatusByAPIResponse(configurations, result.status);
-
 
     return result;
 }
@@ -789,7 +795,6 @@ async function cardFraudStandaloneCharge({configurations, input, amount, currenc
         authorization: !isDirectCharge
     }
 
-
     const result = await createCharge(request, {action: 'standalone-fraud', directCharge: isDirectCharge});
 
     if (result.status === 'Success') {
@@ -800,10 +805,10 @@ async function cardFraudStandaloneCharge({configurations, input, amount, currenc
             phone: input.billing_phone ?? ''
         };
 
-        await customObjectsUtils.setItem(`powerboard${input.orderId}`, JSON.stringify(cacheData));
-        result.powerboardStatus = 'powerboard-pending';
+        await customObjectsUtils.setItem(`paydock_fraud_${input.orderId}`, JSON.stringify(cacheData));
+        result.paydockStatus = 'paydock-pending';
     } else {
-        result.powerboardStatus = 'powerboard-failed';
+        result.paydockStatus = 'paydock-failed';
     }
 
     return result;
@@ -854,9 +859,7 @@ async function cardCustomerCharge({
         authorization: !isDirectCharge
     }
     const result = await createCharge(request, {directCharge: isDirectCharge});
-    result.powerboardStatus = await getPowerboardStatusByAPIResponse(configurations, result.status);
-
-
+    result.paydockStatus = await getPaydockStatusByAPIResponse(configurations, result.status)
     return result;
 }
 
@@ -890,10 +893,7 @@ async function cardCharge({configurations, input, amount, currency, vaultToken})
     }
 
     const result = await createCharge(request, {directCharge: isDirectCharge});
-
-    result.powerboardStatus = await getPowerboardStatusByAPIResponse(configurations, result.status);
-
-
+    result.paydockStatus = await getPaydockStatusByAPIResponse(configurations, result.status);
     return result;
 }
 
@@ -916,7 +916,7 @@ async function bankAccountFlow({configurations, input, amount, currency, vaultTo
             customerId
         });
 
-        result.powerboardStatus = result.status === 'Success' ? 'powerboard-received' : 'powerboard-failed';
+        result.paydockStatus = result.status === 'Success' ? 'paydock-received' : 'paydock-failed';
     } else {
         result = await bankAccountDirectCharge({
             configurations,
@@ -927,13 +927,14 @@ async function bankAccountFlow({configurations, input, amount, currency, vaultTo
             currency
         });
 
-        result.powerboardStatus = result.status === 'Success' ? 'powerboard-requested' : 'powerboard-failed';
+        result.paydockStatus = result.status === 'Success' ? 'paydock-requested' : 'paydock-failed';
     }
 
     return result;
 }
 
 async function apmFlow({configurations, input, amount, currency, paymentSource, paymentType}) {
+
     let isDirectCharge;
     let fraudServiceId = null;
     let fraud = false;
@@ -974,15 +975,14 @@ async function apmFlow({configurations, input, amount, currency, paymentSource, 
             data: fraudData
         }
     }
-
     const result = await createCharge(request, {directCharge: isDirectCharge});
-    result.powerboardStatus = await getPowerboardStatusByAPIResponse(configurations, result.status);
+    result.paydockStatus = await getPaydockStatusByAPIResponse(configurations, result.status);
     return result;
 }
 
 async function createCustomer(data) {
     try {
-        const {response} = await callPowerboard(`/v1/customers`, data, 'POST');
+        const {response} = await callPaydock(`/v1/customers`, data, 'POST');
         if (response.status === 201) {
             return {
                 status: "Success",
@@ -1025,8 +1025,8 @@ async function createCustomerAndSaveVaultToken({configurations, input, vaultToke
     if (customerResponse.status === 'Success' && customerResponse.customerId) {
         customerId = customerResponse.customerId;
 
-        await httpUtils.addPowerboardLog({
-            powerboardChargeID: input.PowerboardTransactionId,
+        await httpUtils.addPaydockLog({
+            paydockChargeID: input.PaydockTransactionId,
             operation: 'Create Customer',
             status: customerResponse.status,
             message: `Create Customer ${customerId}`
@@ -1052,15 +1052,15 @@ async function createCustomerAndSaveVaultToken({configurations, input, vaultToke
             });
 
             if (result.success) {
-                await httpUtils.addPowerboardLog({
-                    powerboardChargeID: input.PowerboardTransactionId,
+                await httpUtils.addPaydockLog({
+                    paydockChargeID: input.PaydockTransactionId,
                     operation: 'Save Customer Vault Token',
                     status: 'Success',
                     message: 'Customer Vault Token saved successfully'
                 })
             } else {
-                await httpUtils.addPowerboardLog({
-                    powerboardChargeID: input.PowerboardTransactionId,
+                await httpUtils.addPaydockLog({
+                    paydockChargeID: input.PaydockTransactionId,
                     operation: 'Save Customer Vault Token',
                     status: 'Failure',
                     message: result.error
@@ -1068,8 +1068,8 @@ async function createCustomerAndSaveVaultToken({configurations, input, vaultToke
             }
         }
     } else {
-        await httpUtils.addPowerboardLog({
-            powerboardChargeID: input.PowerboardTransactionId,
+        await httpUtils.addPaydockLog({
+            paydockChargeID: input.PaydockTransactionId,
             operation: 'Create Customer',
             status: customerResponse.status,
             message: customerResponse.message
@@ -1081,7 +1081,7 @@ async function createCustomerAndSaveVaultToken({configurations, input, vaultToke
 
 async function getVaultTokenData(token) {
     try {
-        const {response} = await callPowerboard(`/v1/vault-tokens/${token}/`, null, 'GET');
+        const {response} = await callPaydock(`/v1/vault-tokens/${token}/`, null, 'GET');
 
         return response.resource.data;
     } catch (error) {
@@ -1152,7 +1152,7 @@ async function insertOrUpdateUserVaultToken({unique_key, user_id, customer_id, t
             let actions = [{
                 action: 'setCustomType',
                 type: {
-                    key: 'powerboard-components-customer-vault-type'
+                    key: 'paydock-components-customer-vault-type'
                 }
             }];
 
@@ -1287,16 +1287,15 @@ async function createCharge(data, params = {}, returnObject = false) {
         if (params.directCharge !== undefined && params.directCharge === false) {
             url += '?capture=false';
         }
+
         if (isFraud) {
             const addressLine2 = data.customer.payment_source.address_line2 ?? '';
-            if(addressLine2 === ''){
-                delete(data.customer.payment_source.address_line2);
-                delete(data.fraud.data.address_line2);
+            if (addressLine2 === '') {
+                delete (data.customer.payment_source.address_line2);
+                delete (data.fraud.data.address_line2);
             }
         }
-
-        const {response} = await callPowerboard(url, data, 'POST');
-
+        const {response} = await callPaydock(url, data, 'POST');
         if (returnObject) {
             return response;
         }
@@ -1324,15 +1323,13 @@ async function createCharge(data, params = {}, returnObject = false) {
 }
 
 function getAdditionalFields(input) {
-
     const additionalFields = {
         address_country: input.address_country ?? '',
         address_postcode: input.address_postcode ?? '',
         address_city: input.address_city ?? '',
         address_line1: input.address_line ?? '',
-        address_line2: input.address_line2 ?? (input.address_line ?? ''),
+        address_line2: input.address_line2 ?? (input.address_line ?? '')
     }
-
     const addressState = input.address_state ?? '';
     if (addressState) {
         additionalFields.addressState = addressState;
@@ -1340,12 +1337,12 @@ function getAdditionalFields(input) {
     return additionalFields
 }
 
-async function callPowerboard(url, data, method) {
+async function callPaydock(url, data, method) {
     let returnedRequest
     let returnedResponse
-    url = await generatePowerboardUrlAction(url);
+    url = await generatePaydockUrlAction(url);
     try {
-        const {response, request} = await fetchAsyncPowerboard(url, data, method)
+        const {response, request} = await fetchAsyncPaydock(url, data, method)
         returnedRequest = request
         returnedResponse = response
     } catch (err) {
@@ -1356,7 +1353,7 @@ async function callPowerboard(url, data, method) {
     return {request: returnedRequest, response: returnedResponse}
 }
 
-async function fetchAsyncPowerboard(
+async function fetchAsyncPaydock(
     url,
     requestObj,
     method
@@ -1364,7 +1361,7 @@ async function fetchAsyncPowerboard(
     let response
     let responseBody
     let responseBodyInText
-    const request = await buildRequestPowerboard(requestObj, method)
+    const request = await buildRequestPaydock(requestObj, method)
 
     try {
         response = await fetch(url, request)
@@ -1374,7 +1371,7 @@ async function fetchAsyncPowerboard(
         if (response)
             // Handle non-JSON format response
             throw new Error(
-                `Unable to receive non-JSON format resposne from Powerboard API : ${responseBodyInText}`,
+                `Unable to receive non-JSON format resposne from Paydock API : ${responseBodyInText}`,
             )
         // Error in fetching URL
         else throw err
@@ -1386,23 +1383,25 @@ async function fetchAsyncPowerboard(
     return {response: responseBody, request}
 }
 
-async function generatePowerboardUrlAction(url) {
-    const apiUrl = await config.getPowerboardApiUrl();
+async function generatePaydockUrlAction(url) {
+    const apiUrl = await config.getPaydockApiUrl();
     return apiUrl + url;
 }
 
-async function buildRequestPowerboard(requestObj, methodOverride) {
-    const powerboardCredentials = await config.getPowerboardConfig('connection');
+async function buildRequestPaydock(requestObj, methodOverride) {
+    const paydockCredentials = await config.getPaydockConfig('connection');
     let requestHeaders = {}
-    if (powerboardCredentials.credentials_type === 'credentials') {
+    if (paydockCredentials.credentials_type === 'credentials') {
         requestHeaders = {
+            'X-Commercetools-Meta': 'V1.0.0_commercetools',
             'Content-Type': 'application/json',
-            'x-user-secret-key': powerboardCredentials.credentials_secret_key
+            'x-user-secret-key': paydockCredentials.credentials_secret_key
         }
     } else {
         requestHeaders = {
+            'X-Commercetools-Meta': 'V1.0.0_commercetools',
             'Content-Type': 'application/json',
-            'x-access-token': powerboardCredentials.credentials_access_key
+            'x-access-token': paydockCredentials.credentials_access_key
         }
     }
 
@@ -1416,22 +1415,6 @@ async function buildRequestPowerboard(requestObj, methodOverride) {
     return request
 }
 
-async function getPowerboardStatusByAPIResponse(configurations, paymentStatus) {
-    let powerboardStatus = 'powerboard-failed'
-    const isDirectCharge = configurations.card_direct_charge === 'Enable';
-    if (paymentStatus === 'Success') {
-        if (isDirectCharge) {
-            powerboardStatus = 'powerboard-paid';
-        } else {
-            powerboardStatus = 'powerboard-authorize';
-        }
-    } else {
-        powerboardStatus = 'powerboard-failed';
-    }
-    return powerboardStatus;
-}
-
-
 async function updateOrderPaymentState(orderId, status) {
     const ctpConfig = config.getExtensionConfig()
     const ctpClient = await ctp.get(ctpConfig)
@@ -1439,7 +1422,7 @@ async function updateOrderPaymentState(orderId, status) {
     if (paymentObject) {
         const updateData = [{
             action: 'setCustomField',
-            name: 'PowerboardPaymentStatus',
+            name: 'PaydockPaymentStatus',
             value: status
         }]
 
@@ -1504,8 +1487,8 @@ async function getUserVaultTokens(user_id) {
 }
 
 
-async function updatePowerboardStatus(endpoint, method, data) {
-    const {response} = await callPowerboard(endpoint, data, method);
+async function updatePaydockStatus(endpoint, method, data) {
+    const {response} = await callPaydock(endpoint, data, method);
     if ([200, 201].includes(response.status)) {
         return {
             status: "Success",
@@ -1524,6 +1507,6 @@ export {
     createStandalone3dsToken,
     makePayment,
     createVaultToken,
-    updatePowerboardStatus,
+    updatePaydockStatus,
     createPreCharge
 }

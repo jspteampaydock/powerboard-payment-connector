@@ -1,5 +1,5 @@
 async function setupNotificationResources() {
-  console.log("setup notification");
+    console.log("setup notification");
 }
 
 export {

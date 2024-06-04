@@ -17,7 +17,7 @@ variables:
     - name: docker:18.09.8-dind
   stage: build
   tags:
-    - powerboard_paydock
+    - paydock_payment_connector
   before_script:
     - docker system prune -af || true
     - docker login -u $PERSONAL_ACCESS_TOKEN_NAME -p $PERSONAL_ACCESS_TOKEN_KEY $CI_REGISTRY
@@ -29,7 +29,7 @@ variables:
   allow_failure: false
   stage: deploy
   tags:
-    - powerboard_paydock
+    - paydock_payment_connector
   before_script:
     - hostname
     - pwd
