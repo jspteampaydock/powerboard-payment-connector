@@ -21,25 +21,24 @@ function deleteCustomFieldAction(name) {
 
 
 
-function getPowerboardStatus(paymentMethod, responseBodyJson) {
-    let powerboardStatus =  c.STATUS_TYPES.PENDING;
+function getPaydockStatus(paymentMethod, responseBodyJson) {
+    let paydockStatus =  c.STATUS_TYPES.PENDING;
     switch (paymentMethod) {
         case 'bank_account':
-            powerboardStatus = responseBodyJson.status === 'requested' ? c.STATUS_TYPES.REQUESTED : c.STATUS_TYPES.FAILED;
+            paydockStatus = responseBodyJson.status === 'requested' ? c.STATUS_TYPES.REQUESTED : c.STATUS_TYPES.FAILED;
             break;
         case 'cart':
             if (responseBodyJson.status === 'complete') {
-                powerboardStatus = responseBodyJson.capture ? c.STATUS_TYPES.PAID : c.STATUS_TYPES.AUTHORIZE;
+                paydockStatus = responseBodyJson.capture ? c.STATUS_TYPES.PAID : c.STATUS_TYPES.AUTHORIZE;
             } else {
-                powerboardStatus = c.STATUS_TYPES.FAILED;
+                paydockStatus = c.STATUS_TYPES.FAILED;
             }
             break;
         default:
-            powerboardStatus = c.STATUS_TYPES.PENDING;
+            paydockStatus = c.STATUS_TYPES.PENDING;
     }
-    return powerboardStatus
+    return paydockStatus
 }
-
 
 function isValidJSON(jsonString) {
     if (typeof jsonString === 'undefined') return true
@@ -135,7 +134,7 @@ export {
     isValidJSON,
     isValidMetadata,
     getPaymentKeyUpdateAction,
-    getPowerboardStatus,
+    getPaydockStatus,
     createChangeTransactionInteractionId,
     createAddTransactionActionByResponse,
     deleteCustomFieldAction

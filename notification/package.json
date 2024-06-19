@@ -1,7 +1,7 @@
 {
-  "name": "commercetools-powerboard-integration-notification",
+  "name": "commercetools-paydock-integration-notification",
   "version": "11.4.0",
-  "description": "Part of the integration of Powerboard with commercetools responsible to receive and process notifications from Powerboard",
+  "description": "Part of the integration of Paydock with commercetools responsible to receive and process notifications from Paydock",
   "type": "module",
   "scripts": {
     "check-coverage": "c8 check-coverage --lines 83",
@@ -29,7 +29,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jspteampowerboard/powerboard-payment-conector"
+    "url": "git+https://github.com/jspteampaydock/paydock-payment-conector"
   },
   "author": {
     "name": "commercetools Professional Services",
@@ -40,9 +40,9 @@
   },
   "contributors": [],
   "bugs": {
-    "url": "https://github.com/jspteampowerboard/powerboard-payment-conector"
+    "url": "https://github.com/jspteampaydock/paydock-payment-conector"
   },
-  "homepage": "https://github.com/jspteampowerboard/powerboard-payment-conector",
+  "homepage": "https://github.com/jspteampaydock/paydock-payment-conector",
   "dependencies": {
     "@commercetools/api-request-builder": "6.0.0",
     "@commercetools/sdk-client": "3.0.0",

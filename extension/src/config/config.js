@@ -2,11 +2,11 @@ import {loadConfig} from './config-loader.js'
 import ctpClientBuilder from "../ctp.js";
 
 let config
-let powerboardConfig;
+let paydockConfig;
 let ctpClient;
 
 function getModuleConfig() {
-    const extensionBaseUrl = process.env.CONNECT_SERVICE_URL ?? 'https://extension.powerboard-commercetools-app.jetsoftpro.dev';
+    const extensionBaseUrl = process.env.CONNECT_SERVICE_URL ?? 'https://extension.paydock-commercetools-app.jetsoftpro.dev';
     return {
         removeSensitiveData: true,
         port: config.port,
@@ -26,9 +26,9 @@ async function getCtpClient() {
     }
     return ctpClient;
 }
-async function getPowerboardApiUrl() {
-    const powerboardC = await getPowerboardConfig('connection');
-    return powerboardC.api_url;
+async function getPaydockApiUrl() {
+    const paydockC = await getPaydockConfig('connection');
+    return paydockC.api_url;
 }
 
 function getExtensionConfig() {
@@ -42,16 +42,16 @@ function getExtensionConfig() {
 }
 
 
-async function getPowerboardConfig(type = 'all', disableCache = false) {
-    if (!powerboardConfig || disableCache) {
+async function getPaydockConfig(type = 'all', disableCache = false) {
+    if (!paydockConfig || disableCache) {
         ctpClient = await getCtpClient();
-        const responsePowerboardConfig = await ctpClient.fetchById(
+        const responsePaydockConfig = await ctpClient.fetchById(
             ctpClient.builder.customObjects,
-            'powerboardConfigContainer',
+            'paydockConfigContainer',
         )
-        if (responsePowerboardConfig.body.results) {
-            powerboardConfig = {};
-            const results = responsePowerboardConfig.body.results.sort((a,b) => {
+        if (responsePaydockConfig.body.results) {
+            paydockConfig = {};
+            const results = responsePaydockConfig.body.results.sort((a,b) => {
                 if (a.version > b.version){
                     return 1;
                 } 
@@ -59,25 +59,25 @@ async function getPowerboardConfig(type = 'all', disableCache = false) {
                 
             });
             results.forEach((element) => {
-                powerboardConfig[element.key] = element.value;
+                paydockConfig[element.key] = element.value;
             });
         }
     }
     switch (type) {
         case 'connection':
             // eslint-disable-next-line no-case-declarations
-            const isSandboxConnection = powerboardConfig['sandbox']?.sandbox_mode ?? false;
+            const isSandboxConnection = paydockConfig['sandbox']?.sandbox_mode ?? false;
             if (isSandboxConnection === 'Yes') {
-                powerboardConfig['sandbox'].api_url = 'https://api.preproduction.powerboard.commbank.com.au';
-                return powerboardConfig['sandbox'] ?? {};
+                paydockConfig['sandbox'].api_url = 'https://api-sandbox.paydock.com';
+                return paydockConfig['sandbox'] ?? {};
             }
-            powerboardConfig['live'].api_url = 'https://api.production.powerboard.commbank.com.au';
-            return powerboardConfig['live'] ?? {};
+            paydockConfig['live'].api_url = 'https://api.paydock.com';
+            return paydockConfig['live'] ?? {};
 
         case 'widget:':
-            return powerboardConfig['live'] ?? {};
+            return paydockConfig['live'] ?? {};
         default:
-            return powerboardConfig
+            return paydockConfig
     }
 
 }
@@ -97,8 +97,8 @@ loadAndValidateConfig()
 
 export default {
     getModuleConfig,
-    getPowerboardConfig,
+    getPaydockConfig,
     getCtpClient,
     getExtensionConfig,
-    getPowerboardApiUrl
+    getPaydockApiUrl
 }

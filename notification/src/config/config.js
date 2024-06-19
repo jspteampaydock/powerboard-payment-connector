@@ -2,12 +2,12 @@ import { loadConfig } from './config-loader.js'
 import ctpClientBuilder from '../utils/ctp.js'
 
 let config
-let powerboardConfig
+let paydockConfig
 let ctpClient;
 
 
 function getNotificationUrl() {
-  return  process.env.CONNECT_SERVICE_URL ?? 'https://notification.powerboard-commercetools-app.jetsoftpro.dev'
+  return  process.env.CONNECT_SERVICE_URL ?? 'https://notification.paydock-commercetools-app.jetsoftpro.dev'
 }
 
 async function getCtpClient() {
@@ -32,9 +32,9 @@ function getModuleConfig() {
   }
 }
 
-async function getPowerboardApiUrl(){
-  const powerboardC = await getPowerboardConfig('connection');
-  return powerboardC.api_url;
+async function getPaydockApiUrl(){
+  const paydockC = await getPaydockConfig('connection');
+  return paydockC.api_url;
 }
 
 function getNotificationConfig() {
@@ -47,36 +47,36 @@ function getNotificationConfig() {
   }
 }
 
-async function getPowerboardConfig(type = 'all') {
-  if (!powerboardConfig) {
+async function getPaydockConfig(type = 'all') {
+  if (!paydockConfig) {
     ctpClient = await getCtpClient();
-    const responsePowerboardConfig = await ctpClient.fetchById(
+    const responsePaydockConfig = await ctpClient.fetchById(
       ctpClient.builder.customObjects,
-      'powerboardConfigContainer'
+      'paydockConfigContainer'
     )
-    if (responsePowerboardConfig.body.results) {
-      powerboardConfig = {}
-      const {results} = responsePowerboardConfig.body
+    if (responsePaydockConfig.body.results) {
+      paydockConfig = {}
+      const {results} = responsePaydockConfig.body
       results.forEach((element) => {
-        powerboardConfig[element.key] = element.value
+        paydockConfig[element.key] = element.value
       })
     }
   }
   switch (type) {
     case 'connection':
       // eslint-disable-next-line no-case-declarations
-      const isSandboxConnection = powerboardConfig['sandbox']?.sandbox_mode ?? false
+      const isSandboxConnection = paydockConfig['sandbox']?.sandbox_mode ?? false
       if (isSandboxConnection === 'Yes') {
-        powerboardConfig['sandbox'].api_url = 'https://api.preproduction.powerboard.commbank.com.au'
-        return powerboardConfig['sandbox'] ?? {}
+        paydockConfig['sandbox'].api_url = 'https://api-sandbox.paydock.com'
+        return paydockConfig['sandbox'] ?? {}
       }
-      powerboardConfig['live'].api_url = 'https://api.production.powerboard.commbank.com.au'
-      return powerboardConfig['live'] ?? {}
+      paydockConfig['live'].api_url = 'https://api.paydock.com'
+      return paydockConfig['live'] ?? {}
 
     case 'widget:':
-      return powerboardConfig['live'] ?? {}
+      return paydockConfig['live'] ?? {}
     default:
-      return powerboardConfig
+      return paydockConfig
   }
 
 }
@@ -96,9 +96,9 @@ loadAndValidateConfig()
 // Using default, because the file needs to be exported as object.
 export default {
   getModuleConfig,
-  getPowerboardConfig,
+  getPaydockConfig,
   getNotificationUrl,
-  getPowerboardApiUrl,
+  getPaydockApiUrl,
   getCtpClient,
   getNotificationConfig
 }

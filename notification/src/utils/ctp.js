@@ -123,6 +123,13 @@ async function setUpClient(config) {
       return ctpClient.execute(this.buildRequestOptions(uri.byKey(key).build()))
     },
 
+    fetchOrderByNymber(uri, orderNumber) {
+      let url = uri.byKey(orderNumber).build();
+      url = url.replace('/key', '/order-number');
+      url = this.buildRequestOptions(url)
+      return ctpClient.execute(url)
+    },
+
     fetchByKeys(uri, keys) {
       const keyList = keys.map((key) => `"${key}"`)
       const keyConditions = `key in (${keyList.join(',')})`

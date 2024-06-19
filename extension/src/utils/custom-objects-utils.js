@@ -1,6 +1,6 @@
 import config from '../config/config.js'
 
-const container = "powerboard-storage";
+const container = "paydock-storage";
 async function setItem(key, value) {
     const customObject = {
         container,

@@ -7,7 +7,7 @@ let obj
 
 function getLogger() {
     if (obj === undefined) {
-        const NOTIFICATION_MODULE_NAME = 'ctp-powerboard-integration-notifications'
+        const NOTIFICATION_MODULE_NAME = 'ctp-paydock-integration-notifications'
         obj = bunyan.createLogger({
             name: NOTIFICATION_MODULE_NAME,
             stream: process.stdout,
@@ -21,11 +21,11 @@ function getLogger() {
     return obj
 }
 
-async function addPowerboardHttpLog(data) {
-    const logKey = `powerboard-notification-http_${Date.now()}`;
+async function addPaydockHttpLog(data) {
+    const logKey = `paydock-notification-http_${Date.now()}`;
 
     const logObject = {
-        container: "powerboard-notification-http-logs",
+        container: "paydock-notification-http-logs",
         key: logKey,
         value: data
     };
@@ -36,10 +36,10 @@ async function addPowerboardHttpLog(data) {
     )
 }
 
-async function addPowerboardLog(data) {
-    const logKey = `powerboard-log_${Date.now()}`;
+async function addPaydockLog(data) {
+    const logKey = `paydock-log_${Date.now()}`;
     const logObject = {
-        container: "powerboard-logs",
+        container: "paydock-logs",
         key: logKey,
         value: data
     };
@@ -51,4 +51,4 @@ async function addPowerboardLog(data) {
     )
 }
 
-export {getLogger, addPowerboardLog, addPowerboardHttpLog}
+export {getLogger, addPaydockLog, addPaydockHttpLog}
